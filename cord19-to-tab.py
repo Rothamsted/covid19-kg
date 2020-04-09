@@ -210,7 +210,7 @@ parser.add_argument(
 parser.add_argument(
     '-d', '--drug', help='Specifies the output name for DRUG data.', required=False)
 parser.add_argument(
-    '-h', '--hpo', help='Specifies the output name for HPO data.', required=False)
+    '-hp', '--hpo', help='Specifies the output name for HPO data.', required=False)
 args = vars(parser.parse_args())
 
 convertData(output_dir=args['output'], base_dir=args['basedir'], all_output=args['alloutput'], sarscov=args['sarscov'], genes=args['genes'], cvprot=args['cvprot'], drug=args['drug'], hpo=args['hpo'])
