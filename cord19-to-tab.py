@@ -1,4 +1,4 @@
-import json, glob, os, argparse
+import json, glob, os, argparse, re
 import pandas as pd
 import numpy as np
 from pandas.io.json import json_normalize
@@ -10,13 +10,19 @@ def sciBiteDF(df, cols, target):
 
     if f"termite_hits.{target}" in cols:
         list = df[f'termite_hits.{target}'].dropna()
-        df_index = df.index[df[f'termite_hits.{target}'].nonzero()].tolist()
+        df_index = df.index[df[f'termite_hits.{target}'].to_numpy().nonzero()].tolist()
         list_index = df[f'termite_hits.{target}']
         list = [x for x in list if x != []] # Remove empty lists
         df_ = json_normalize(pd.DataFrame(list)[0])
         text_list = df.text[df_index].dropna()
         df_['text'] = text_list.reset_index(drop=True)
-        return df_.drop_duplicates()
+        df_.duplicated(subset="name")
+        df_['id'].groupby([df_.name, df_.text, df_.hit_count]).apply(set).reset_index()
+        df_ = df_ [['name', 'id', 'text', 'hit_count']]
+        aggregation_functions = {'name': 'first', 'hit_count': 'sum', 'text': '\n'.join}
+        df_agg = df_.groupby(df_['name']).aggregate(aggregation_functions)
+        df_agg.reset_index(drop=True, inplace=True)
+        return df_agg
     else:
         return None
 
