@@ -4,6 +4,7 @@ import numpy as np
 from pandas.io.json import json_normalize
 from collections import OrderedDict
 
+
 def sciBiteDF(df, cols, target):
     if f"termite_hits.{target}" in cols:
         list_df =  df[[f'termite_hits.{target}', 'text']].dropna()
@@ -14,10 +15,15 @@ def sciBiteDF(df, cols, target):
                 curr_ind = list_df[f'termite_hits.{target}'].index.tolist()[x]
                 curr_text = list_df['text'][curr_ind]
                 for key in i:
-                    key['text'] = curr_text
+                    try:
+                        sentence_loc = key['hit_sentence_locations'][0]
+                        key['text'] = curr_text[sentence_loc[0]:sentence_loc[1]] + "<br>"
+                    except:
+                        key['text'] = curr_text + "<br>"
+
             # Normalize the df - must iterate through it and concat the normalized data to create the df
             normalized_df = pd.concat([pd.DataFrame(json_normalize(x)) for x in df[f'termite_hits.{target}'].dropna()], ignore_index=False)
-            normalized_df['text'] = normalized_df['text'].str.replace("\t", "", regex=True).str.strip().str.lstrip(".")
+            normalized_df['text'] = normalized_df['text'].str.replace("\t", "", regex=True).str.lstrip(".")
             normalized_df_ = normalized_df['id'].groupby([normalized_df.name, normalized_df.text, normalized_df.hit_count]).apply(set).reset_index()
             normalized_df_ = normalized_df_ [['name', 'id', 'text', 'hit_count']]
             df_agg = normalized_df_.groupby(normalized_df_['name']).aggregate({'name': 'first', 'id': 'first', 'hit_count': 'sum', 'text': ''.join})
@@ -70,6 +76,7 @@ def convertData(output_dir, base_dir, all_output, sarscov, genes, cvprot, drug, 
         termite_abstract_df, termite_all_df = json_normalize(allData['abstract']), json_normalize(allData['body_text'])
         termite_abstract_cols, termite_all_df_cols = termite_abstract_df.columns, termite_all_df.columns
         # SARS ontologies
+
         addToList(type=sarscov, list_=SARSCORS_list, target="SARSCOV",data=allData, abstract_cols=termite_abstract_cols, all_cols=termite_all_df_cols, abstract_df=termite_abstract_df, all_df=termite_all_df)
         # GENE
         addToList(type=genes, list_=GENE_list, target="GENE",data=allData, abstract_cols=termite_abstract_cols, all_cols=termite_all_df_cols, abstract_df=termite_abstract_df, all_df=termite_all_df)
@@ -123,11 +130,12 @@ def convertData(output_dir, base_dir, all_output, sarscov, genes, cvprot, drug, 
         concat_df = pd.concat(pd_list, axis=0, ignore_index=True)
         concat_df=concat_df[concat_df.paper_id.apply(lambda s: np.any([t in s for t in paper_id_list]))]
         concat_df=concat_df.dropna()
-        concat_df=concat_df.drop_duplicates()
+        concat_df=concat_df.drop_duplicates(['AUTHORS','AbstractHeader','paper_id'])
         concat_df.replace('', "Not found", inplace=True)
         concat_df['Abstract'] = concat_df['Abstract'].str.strip()
         concat_df['AbstractHeader'] = concat_df['AbstractHeader'].str.strip()
         concat_df = concat_df[concat_df['paper_id'] != '']
+        concat_df = concat_df[concat_df['Abstract'] != 'Not found']
         print(f"Writing data out in {base_dir}/output/covid19_papers.tsv\n\n")
         concat_df.to_csv(f"{output_dir}/output/{all_output}.tsv", sep="\t", index=None, header=True)
         print("Finished outputting main data!\n")
@@ -137,17 +145,13 @@ def convertData(output_dir, base_dir, all_output, sarscov, genes, cvprot, drug, 
             print(f"Concatenating sars-CoV data\n\n")
             sars_concat = pd.concat(SARSCORS_list, axis=0, ignore_index=True, sort=False)
             sars_concat = sars_concat[['name', 'id', 'hit_count', 'text', 'paper_id']]
-            sars_concat = sars_concat.replace(np.nan, 'N/A', regex=True)
-            sars_concat['id'] = sars_concat.id.apply(str)
-            sars_concat['id'] = sars_concat['id'].str.replace('{', '')
-            sars_concat['id'] = sars_concat['id'].str.replace('\'}', '')
-            sars_concat['id'] = sars_concat['id'].str.split("/").str[-1]
-            sars_concat['id'] = sars_concat['id'].str.replace("_", ": ")
             sars_concat=sars_concat.dropna()
-            sars_concat=sars_concat.drop_duplicates()
+            #sars_concat = sars_concat.replace(np.nan, 'N/A', regex=True)
+            sars_concat['id'] = sars_concat.id.apply(str)
+            sars_concat['id'] = sars_concat['id'].str.replace('{', '').str.replace('\'}', '').str.split("/").str[-1].str.replace("_", ": ")
             sars_concat=sars_concat[sars_concat.paper_id.apply(lambda s: np.any([t in s for t in paper_id_list]))]
-            sars_concat = sars_concat.replace('', "Not found")
-            sars_concat['text'] = sars_concat['text'].str.strip()
+            sars_concat['text'] = sars_concat['text'].str.strip().replace('', np.nan)
+            sars_concat=sars_concat.dropna().drop_duplicates(['name','id','paper_id'])
             sars_concat = sars_concat[sars_concat['paper_id'] != '']
             sars_concat = sars_concat[['name', 'id', 'paper_id', 'hit_count', 'text']]
             sars_concat.to_csv(f"{output_dir}/output/{sarscov}.tsv", sep="\t", index=None, header=True)
@@ -162,12 +166,9 @@ def convertData(output_dir, base_dir, all_output, sarscov, genes, cvprot, drug, 
             genes_concat = pd.concat(GENE_list, axis=0, ignore_index=True, sort=False)
             genes_concat = genes_concat[['name', 'id', 'hit_count', 'text', 'paper_id']]
             genes_concat['id'] = genes_concat.id.apply(str)
-            genes_concat['id'] = genes_concat['id'].str.replace('{', '')
-            genes_concat['id'] = genes_concat['id'].str.replace('\'}', '')
-            genes_concat['id'] = genes_concat['id'].str.split("=").str[-1]
-            genes_concat=genes_concat.dropna()
-            genes_concat=genes_concat.drop_duplicates()
-            genes_concat = genes_concat.replace('', "Not found")
+            genes_concat['id'] = genes_concat['id'].str.replace('{', '').str.replace('\'}', '').str.split("=").str[-1]
+            genes_concat['text'] = genes_concat['text'].replace('', np.nan)
+            genes_concat = genes_concat.dropna().drop_duplicates(['name','id','paper_id'])
             genes_concat = genes_concat[genes_concat.paper_id.apply(lambda s: np.any([t in s for t in paper_id_list]))]
             genes_concat = genes_concat[genes_concat['paper_id']  != '']
             genes_concat = genes_concat[['name', 'id', 'paper_id', 'hit_count', 'text']]
@@ -183,14 +184,10 @@ def convertData(output_dir, base_dir, all_output, sarscov, genes, cvprot, drug, 
             cvprot_list = pd.concat(CVPROT_list, axis=0, ignore_index=True, sort=False)
             cvprot_list = cvprot_list[['name', 'id', 'hit_count', 'text', 'paper_id']]
             cvprot_list['id'] = cvprot_list.id.apply(str)
-            cvprot_list['id'] = cvprot_list['id'].str.replace('{', '')
-            cvprot_list['id'] = cvprot_list['id'].str.replace('\'}', '')
-            cvprot_list['id'] = cvprot_list['id'].str.split("/").str[-1]
-            cvprot_list=cvprot_list.dropna()
-            cvprot_list=cvprot_list.drop_duplicates()
+            cvprot_list['id'] = cvprot_list['id'].str.replace('{', '').str.replace('\'}', '').str.split("/").str[-1]
             cvprot_list = cvprot_list[cvprot_list.paper_id.apply(lambda s: np.any([t in s for t in paper_id_list]))]
-            cvprot_list = cvprot_list.replace('', "Not found")
-            cvprot_list['text'] = cvprot_list['text'].str.strip()
+            cvprot_list['text'] = cvprot_list['text'].str.strip().replace('', np.nan)
+            cvprot_list=cvprot_list.dropna().drop_duplicates(['name','id','paper_id'])
             cvprot_list = cvprot_list[cvprot_list['paper_id'] != '']
             cvprot_list = cvprot_list[['name', 'id', 'paper_id', 'hit_count', 'text']]
             cvprot_list.to_csv(f"{output_dir}/output/{cvprot}.tsv", sep="\t", index=None, header=True)
@@ -205,14 +202,10 @@ def convertData(output_dir, base_dir, all_output, sarscov, genes, cvprot, drug, 
             drug_list = pd.concat(DRUG_list, axis=0, ignore_index=True, sort=False)
             drug_list = drug_list[['name', 'id', 'hit_count', 'text', 'paper_id']]
             drug_list['id'] = drug_list.id.apply(str)
-            drug_list['id'] = drug_list['id'].str.replace('{', '')
-            drug_list['id'] = drug_list['id'].str.replace('\'}', '')
-            drug_list['id'] = drug_list['id'].str.split("/").str[-1]
-            drug_list=drug_list.dropna()
-            drug_list=drug_list.drop_duplicates()
+            drug_list['id'] = drug_list['id'].str.replace('{', '').str.replace('\'}', '').str.split("/").str[-1]
             drug_list = drug_list[drug_list.paper_id.apply(lambda s: np.any([t in s for t in paper_id_list]))]
-            drug_list = drug_list.replace('', "Not found")
-            drug_list['text'] = drug_list['text'].str.strip()
+            drug_list['text'] = drug_list['text'].str.strip().replace('', np.nan)
+            drug_list=drug_list.dropna().drop_duplicates(['name','id','paper_id'])
             drug_list = drug_list[drug_list['paper_id'] != '']
             drug_list = drug_list[['name', 'id', 'paper_id', 'hit_count', 'text']]
             drug_list.to_csv(f"{output_dir}/output/{drug}.tsv", sep="\t", index=None, header=True)
@@ -227,15 +220,10 @@ def convertData(output_dir, base_dir, all_output, sarscov, genes, cvprot, drug, 
             hpo_list = pd.concat(HPO_list, axis=0, ignore_index=True, sort=False)
             hpo_list = hpo_list[['name', 'id', 'hit_count', 'text', 'paper_id']]
             hpo_list['id'] = hpo_list.id.apply(str)
-            hpo_list['id'] = hpo_list['id'].str.replace('{', '')
-            hpo_list['id'] = hpo_list['id'].str.replace('\'}', '')
-            hpo_list['id'] = hpo_list['id'].str.split("/").str[-1]
-            hpo_list['id'] = hpo_list['id'].str.replace("HP", "HP:")
-            hpo_list=hpo_list.dropna()
-            hpo_list=hpo_list.drop_duplicates()
+            hpo_list['id'] = hpo_list['id'].str.replace('{', '').str.replace('\'}', '').str.split("/").str[-1].str.replace("HP", "HP:")
             hpo_list[hpo_list.paper_id.apply(lambda s: np.any([t in s for t in paper_id_list]))]
-            hpo_list.replace('', "Not found", inplace=True)
-            hpo_list['text'] = hpo_list['text'].str.strip()
+            hpo_list['text'].str.strip().replace('', np.nan, inplace=True)
+            hpo_list=hpo_list.dropna().drop_duplicates(['name','id','paper_id'])
             hpo_list = hpo_list[hpo_list['paper_id'] != '']
             hpo_list = hpo_list[['name', 'id', 'paper_id', 'hit_count', 'text']]
             hpo_list.to_csv(f"{output_dir}/output/{hpo}.tsv", sep="\t", index=None, header=True)
