@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Ondex version="3.0">
+  <Workflow>
+    <Graph name="memorygraph">
+      <Arg name="GraphName">default</Arg>
+      <Arg name="graphId">default</Arg>
+    </Graph>
+    <Parser name="medline">
+      <Arg name="ImportCitedPMIDs">false</Arg>
+      <Arg name="PubMedIdsFile">${DUMPDIR}/pmids.txt</Arg>
+      <Arg name="graphId">default</Arg>
+    </Parser>
+    <Parser name="tabParser2">
+      <Arg name="InputFile">${DUMPDIR}/abs-genes.txt</Arg>
+      <Arg name="configFile">${MYDIR}/gene-abs-tb-import.xml</Arg>
+      <Arg name="graphId">default</Arg>
+      <Arg name="mergeOptions">MERGE_ON_ACCESSIONS</Arg>
+    </Parser>
+    <Parser name="tabParser2">
+      <Arg name="InputFile">${DUMPDIR}/body-genes.txt</Arg>
+      <Arg name="configFile">${MYDIR}/gene-body-tb-import.xml</Arg>
+      <Arg name="graphId">default</Arg>
+      <Arg name="mergeOptions">MERGE_ON_ACCESSIONS</Arg>
+    </Parser>
+    <!-- Used to cut the size and inspect it in Ondex 
+    <Transformer name="graphSampler">
+      <Arg name="relativeSize">0.005</Arg>
+      <Arg name="graphId">default</Arg>
+    </Transformer> -->
+    <Export name="oxl">
+      <Arg name="pretty">false</Arg>
+      <Arg name="ExportIsolatedConcepts">true</Arg>
+      <Arg name="GZip">true</Arg>
+      <Arg name="ExportFile">${DUMPDIR}/covid.oxl</Arg>
+      <Arg name="graphId">default</Arg>
+    </Export>
+  </Workflow>
+</Ondex>

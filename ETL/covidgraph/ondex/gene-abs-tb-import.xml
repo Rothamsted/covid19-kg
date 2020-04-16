@@ -1,0 +1,34 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<parser 
+	xmlns = "http://www.ondex.org/xml/schema/tab_parser" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+
+	<delimiter>,</delimiter>
+	<quote>"</quote>
+	<encoding>UTF-8</encoding>
+	<start-line>2</start-line>
+
+	<concept id = "pub">
+		<class>Publication</class>
+		<data-source>PubMed</data-source>
+		<accession data-source="PubMed">
+			<column index='0' />
+		</accession>
+	</concept>
+
+	<concept id = "gene">
+		<class>Gene</class>
+		<data-source>ENSEMBL</data-source>
+		<accession data-source="ENSEMBL">
+			<column index='1' />
+		</accession>
+	</concept>
+
+	<relation source-ref = "gene" target-ref = "pub">
+		<type>pub_in</type>
+		<evidence>CovidGraph</evidence>
+		<attribute name = "occursInpartOfText" type = "TEXT" indexed = 'true'>abstract</attribute>
+	</relation>
+
+</parser>
+	
