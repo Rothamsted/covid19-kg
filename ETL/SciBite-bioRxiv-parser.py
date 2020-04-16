@@ -49,8 +49,12 @@ def combineDFs(target, data, abstract_cols, all_cols, abstract_df, all_df):
     all_df = sciBiteDF(df=all_df, cols=all_cols, target=target)
     meta_df = sciMetaDF(target=target, data=data)
     concat_df = pd.concat([abstract_df, all_df, meta_df], ignore_index=True, sort=False)
-    concat_df['paper_id'] = data['paper_id']
-    return concat_df
+    concat_df['id'] = concat_df.id.apply(str).str.replace("{", '').str.replace("}", '').str.replace('\'', '').str.strip()
+    normalized_concat_df = concat_df['id'].groupby([concat_df.name, concat_df.text, concat_df.hit_count]).apply(set).reset_index()
+    df_agg_concat_df = normalized_concat_df.groupby(normalized_concat_df['name']).aggregate({'name': 'first', 'id': 'first', 'hit_count': 'sum', 'text': ''.join})
+    df_agg_concat_df.reset_index(drop=True, inplace=True)
+    df_agg_concat_df['paper_id'] = data['paper_id']
+    return df_agg_concat_df
 
 def addToList(type, list_, target, data, abstract_cols, all_cols, abstract_df, all_df):
     try:
@@ -66,7 +70,7 @@ def convertData(output_dir, base_dir, all_output, sarscov, genes, cvprot, drug, 
 
     json_file_dirs = glob.glob(f"{base_dir}/*.json")
     paper_id_list = [x.split("/")[-1].replace(".json", "") for x in json_file_dirs]
-    #index = [x for x, s in enumerate(json_file_dirs) if 'f93daa3d8d53761cfcf4c9fb8ff03dace02a858c' in s ]
+    #index = [x for x, s in enumerate(json_file_dirs) if '53442eacc3f233078507fa37b78267399e8c1e3b' in s ]
     pd_list, SARSCORS_list, GENE_list, CVPROT_list, DRUG_list, HPO_list = [], [], [], [], [], []
     for file_no, file_dir in enumerate(json_file_dirs):
         with open(file_dir, 'r') as f:
