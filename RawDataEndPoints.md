@@ -5,9 +5,10 @@ The dataset backing our [Knetminer instance about CoViD 19][10] pandemics are al
 us if you're interested.
 
 [10]: https://knetminer.rothamsted.ac.uk/COVID-19
-[20]: TODO
+[20]: http://knetminer-data.cyverseuk.org/lodestar/sparql
 [30]: TODO
 
+We are grateful to Cyverse UK for the server resources provided!
 
 ## Schema
 
