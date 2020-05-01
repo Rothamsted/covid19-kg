@@ -8,7 +8,7 @@ us if you're interested.
 [20]: http://knetminer-data.cyverseuk.org/lodestar/sparql
 [30]: TODO
 
-We are grateful to Cyverse UK for the server resources provided!
+We are grateful to [Cyverse UK](https://cyverseuk.org/) for the server resources provided!
 
 ## Schema
 
