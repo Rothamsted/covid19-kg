@@ -47,25 +47,7 @@ LIMIT 25
 ### Known drugs, their targets and encoding genes
 
 ```haskell
-MATCH (prot:Protein) - [:has_target] - (drug:Drug)
-OPTIONAL MATCH (gene:Gene) - [:enc] -> (prot)
-WHERE toLower(drug.prefName) IN [
-  'opril',
-  'minoxidil',
-  'benzoyl peroxide',
-  'isotretinoin',
-  'trifluoperazine'
-]
-RETURN drug.prefName, prot.prefName, gene.identifier
-ORDER BY drug.prefName, prot.prefName, gene.identifier
-LIMIT 25
-```
-
-From this, we learn that there aren't genes encoding drug targets. But there are references:
-
-```haskell
-MATCH (gene:Gene) - [:enc] -> (xref:Protein) 
-  - [:xref] - (prot:Protein) <- [:has_target] - (drug:Drug),
+MATCH (gene:Gene) - [:enc] -> (xref:Protein) - [:xref] - (prot:Protein) <- [:has_target] - (drug:Drug),
 (gene) - [:identifier] - (geneAcc:Accession)
 WHERE toLower ( drug.prefName ) IN [
   'opril',
@@ -73,15 +55,16 @@ WHERE toLower ( drug.prefName ) IN [
   'benzoyl peroxide',
   'isotretinoin',
   'trifluoperazine']
-RETURN DISTINCT drug.prefName AS drugName, prot.prefName AS protName, geneAcc.identifier AS geneAcc, xref.prefName AS xrefName
+RETURN DISTINCT drug.prefName AS drugName, prot.prefName AS protName, geneAcc.identifier AS geneAcc
 ORDER BY drugName, protName, geneAcc
 LIMIT 25
 ```
+
+Note that there aren't direct gene/protein/drug chains, due to the way different datasets 
+are merged.
+
 Moreover, now the gene accession is fetched from accession links, to catch all non-unique 
 accessions.
-
-Also note that we have a single query in the [SPARQL endpoint][20] to cover the two cases 
-above. Union queries are much easier to write in SPARQL than in Cypher.
 
 ### Most common pathways related to proteins that are targeted by literature-cited drugs 
 
