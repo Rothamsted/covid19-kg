@@ -61,6 +61,22 @@ ORDER BY drug.prefName, prot.prefName, gene.identifier
 LIMIT 25
 ```
 
+From this, we learn that there aren't genes encoding drug targets. But there are references:
+
+```haskell
+MATCH (gene:Gene) - [:enc] -> (xref:Protein) - [:xref] - (prot:Protein) <- [:has_target] - (drug:Drug),
+(gene) - [:identifier] - (geneAcc:Accession)
+WHERE toLower ( drug.prefName ) IN [
+  'opril',
+  'minoxidil',
+  'benzoyl peroxide',
+  'isotretinoin',
+  'trifluoperazine']
+RETURN DISTINCT drug.prefName AS drugName, prot.prefName AS protName, geneAcc.identifier AS geneAcc, xref.prefName AS xrefName
+ORDER BY drugName, protName, geneAcc
+LIMIT 25
+```
+
 ### Most common pathways related to proteins that are targeted by literature-cited drugs 
 
 This computes a table of the GO Biological processes that have the highest number of associated 
