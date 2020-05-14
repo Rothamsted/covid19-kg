@@ -2,7 +2,10 @@
 
 The dataset backing our [Knetminer instance about CoViD 19][10] pandemics are also available as 
 [SPARQL][20] and [Neo4j][30]. Dumps are also available for these databases, please ask
-us if you're interested.
+us if you're interested. 
+
+*Note that you don't need any user/password for Neo4j, just leave 
+the corresponding fields as they are.*
 
 [10]: https://knetminer.rothamsted.ac.uk/COVID-19
 [20]: http://knetminer-data.cyverseuk.org/lodestar/sparql
