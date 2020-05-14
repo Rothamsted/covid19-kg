@@ -6,7 +6,7 @@ us if you're interested.
 
 [10]: https://knetminer.rothamsted.ac.uk/COVID-19
 [20]: http://knetminer-data.cyverseuk.org/lodestar/sparql
-[30]: TODO
+[30]: http://knetminer-covid19.cyverseuk.org:7476
 
 We are grateful to [Cyverse UK](https://cyverseuk.org/) for the server resources provided!
 
