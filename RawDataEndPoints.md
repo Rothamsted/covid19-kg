@@ -4,8 +4,12 @@ The dataset backing our [Knetminer instance about CoViD 19][10] pandemics are al
 [SPARQL][20] and [Neo4j][30]. Dumps are also available for these databases, please ask
 us if you're interested. 
 
-*Note that you don't need any user/password for Neo4j, just leave 
-the corresponding fields as they are.*
+**Notes**:  
+* To access the Neo4j's CoViD-19 endpoint programmatically (ie, using the Neo4j driver from your programs), 
+you need this URL: `bolt://knetminer-neo4j.cyverseuk.org:7689`
+* you don't need any user/password for Neo4j, just leave the corresponding fields as they are (don't pass any
+authentication parameter to `GraphDatabase.driver()`).
+ 
 
 [10]: https://knetminer.rothamsted.ac.uk/COVID-19
 [20]: http://knetminer-data.cyverseuk.org/lodestar/sparql
