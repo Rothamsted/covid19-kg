@@ -11,7 +11,7 @@ you need this URL: `bolt://knetminer-neo4j.cyverseuk.org:7689`
 authentication parameter to `GraphDatabase.driver()`).
  
 
-[10]: https://knetminer.rothamsted.ac.uk/COVID-19
+[10]: https://knetminer.com/COVID-19
 [20]: http://knetminer-data.cyverseuk.org/lodestar/sparql
 [30]: http://knetminer-covid19.cyverseuk.org:7476
 
