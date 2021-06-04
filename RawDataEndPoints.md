@@ -1,4 +1,4 @@
-# CoViD-19 Kentminer, Raw Data Endpoints
+# COVID-19 KnetMiner Knowledge Graph and Data Endpoints
 
 The dataset backing our [Knetminer instance about CoViD 19][10] pandemics are also available as 
 [SPARQL][20] and [Neo4j][30]. Dumps are also available for these databases, please ask
