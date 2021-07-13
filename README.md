@@ -1,3 +1,5 @@
+[![DOI](https://zenodo.org/badge/254372275.svg)](https://zenodo.org/badge/latestdoi/254372275)
+
 # COVID-19 KnetMiner Knowledge Graph and Data Endpoints
 
 The dataset backing our [Knetminer instance about COVID-19][10] pandemics are available via public  
