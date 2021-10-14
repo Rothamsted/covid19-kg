@@ -2,7 +2,11 @@
 
 The dataset backing our [Knetminer instance about CoViD 19][10] pandemics are also available as 
 [SPARQL][20] and [Neo4j][30]. Dumps are also available for these databases, please ask
-us if you're interested. 
+us if you're interested.  
+
+More details on this dataset are available from our [CoViD-19 publication][15].
+
+[15]: https://f1000research.com/articles/10-703
 
 **Notes**:  
 * To access the Neo4j's CoViD-19 endpoint programmatically (ie, using the Neo4j driver from your programs), 
